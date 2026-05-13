@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { UserService } from '../services/user.service'
+import { IUser } from '../interfaces/user.interface'
 
 const userService = new UserService()
 
@@ -20,9 +21,9 @@ export class UserController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const { nombre, email } = req.body
-      const data = await userService.create(nombre, email)
-      res.status(201).json({ status: 201, data })
+      const { nombre, email, password }: IUser = req.body
+      const user = await userService.create({ nombre, email, password })
+      res.status(201).json({ status: 201, data: user })
     } catch (error: any) {
       res.status(400).json({ status: 400, message: error.message })
     }
@@ -30,13 +31,13 @@ export class UserController {
 
   async update(req: Request, res: Response): Promise<void> {
     try {
-      const { nombre, email } = req.body
-      const data = await userService.update(req.params.id as string, nombre, email)
-      if (!data) {
+      const { nombre, email, password }: IUser = req.body
+      const user = await userService.update(req.params.id as string, { nombre, email, password })
+      if (!user) {
         res.status(404).json({ status: 404, message: 'Usuario no encontrado' })
         return
       }
-      res.json({ status: 200, data })
+      res.json({ status: 200, data: user })
     } catch (error: any) {
       res.status(400).json({ status: 400, message: error.message })
     }
