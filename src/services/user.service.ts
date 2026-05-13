@@ -1,47 +1,78 @@
 import { AppDataSource } from '../database/db'
 import { User } from '../entities/user.entity'
+import { IUser, IUserResponse } from '../interfaces/user.interface'
 
 const userRepository = AppDataSource.getRepository(User)
 
 export class UserService {
-  async findAll(): Promise<User[]> {
-    return await userRepository.find()
+  async findAll(): Promise<IUserResponse[]> {
+    const users = await userRepository.find()
+    return users.map(user => ({
+      id: user.id,
+      nombre: user.nombre,
+      email: user.email
+    }))
   }
 
-  async findById(id: string): Promise<User | null> {
-    return await userRepository.findOneBy({ id })
+  async findById(id: string): Promise<IUserResponse | null> {
+    const user = await userRepository.findOneBy({ id })
+    if (!user) return null
+    return {
+      id: user.id,
+      nombre: user.nombre,
+      email: user.email
+    }
   }
 
-  async create(nombre: string, email: string): Promise<User> {
-    if (!nombre || nombre.trim() === '') {
+  async create(data: IUser): Promise<IUserResponse> {
+    if (!data.nombre || data.nombre.trim() === '') {
       throw new Error('El nombre no puede estar vacío')
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(data.email)) {
       throw new Error('El email no tiene un formato válido')
     }
 
-    const user = userRepository.create({ nombre, email })
-    return await userRepository.save(user)
+    if (!data.password || data.password.trim() === '') {
+      throw new Error('La contraseña no puede estar vacía')
+    }
+
+    const user = userRepository.create(data)
+    const saved = await userRepository.save(user)
+    return {
+      id: saved.id,
+      nombre: saved.nombre,
+      email: saved.email
+    }
   }
 
-  async update(id: string, nombre: string, email: string): Promise<User | null> {
+  async update(id: string, data: IUser): Promise<IUserResponse | null> {
     const user = await userRepository.findOneBy({ id })
     if (!user) return null
 
-    if (!nombre || nombre.trim() === '') {
+    if (!data.nombre || data.nombre.trim() === '') {
       throw new Error('El nombre no puede estar vacío')
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(data.email)) {
       throw new Error('El email no tiene un formato válido')
     }
 
-    user.nombre = nombre
-    user.email = email
-    return await userRepository.save(user)
+    if (!data.password || data.password.trim() === '') {
+      throw new Error('La contraseña no puede estar vacía')
+    }
+
+    user.nombre = data.nombre
+    user.email = data.email
+    user.password = data.password
+    const saved = await userRepository.save(user)
+    return {
+      id: saved.id,
+      nombre: saved.nombre,
+      email: saved.email
+    }
   }
 
   async delete(id: string): Promise<boolean> {
