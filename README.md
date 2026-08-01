@@ -22,3 +22,17 @@ A backend RESTful API built for an e-commerce application as part of Object-Orie
    ```bash
    git clone [https://github.com/YonaZakkart/ecomerce-api.git](https://github.com/YonaZakkart/ecomerce-api.git)
    cd ecomerce-api
+Install dependencies:
+
+Bash
+npm install
+Environment setup:
+
+Create a .env file in the root folder based on .env.example.
+
+Run the project:
+
+Bash
+npm start
+# or for development:
+npm run dev
